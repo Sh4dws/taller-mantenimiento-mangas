@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de mangas</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <main>
+        <h1>Catálogo de mangas</h1>
+        <p>Administra los mangas de tu colección.</p>
+
+        <section>
+            <h2 id="titulo-formulario">Registrar manga</h2>
+
+            <form id="formulario">
+                <label for="titulo">Título</label>
+                <input id="titulo" type="text" maxlength="120" required>
+
+                <label for="autor">Autor</label>
+                <input id="autor" type="text" maxlength="100" required>
+
+                <label for="genero">Género</label>
+                <input id="genero" type="text" maxlength="60" required>
+
+                <label for="tomos">Número de tomos</label>
+                <input id="tomos" type="number" min="1" step="1" required>
+
+                <label for="estado">Estado</label>
+                <select id="estado" required>
+                    <option value="En publicación">En publicación</option>
+                    <option value="Finalizado">Finalizado</option>
+                </select>
+
+                <div class="acciones">
+                    <button id="guardar" type="submit">Registrar</button>
+                    <button id="cancelar" type="button" hidden>
+                        Cancelar edición
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <p id="mensaje" role="status" aria-live="polite"></p>
+
+        <section>
+            <div class="encabezado">
+                <h2>Mangas registrados</h2>
+                <button id="consultar" type="button">Consultar mangas</button>
+            </div>
+
+            <div class="tabla-contenedor">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Autor</th>
+                            <th>Género</th>
+                            <th>Tomos</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-mangas"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
