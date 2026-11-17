@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateEventDto } from './dto/create-event.dto';
@@ -84,6 +84,84 @@ export class EventsService {
 
     return { ok: false };
   }
+
+    async findPaginated(page: number, limit: number): Promise<object> {
+    if (!Number.isSafeInteger(page) || page < 1) {
+      throw new BadRequestException('page debe ser un entero mayor que cero.');
+    }
+
+    if (!Number.isSafeInteger(limit) || limit < 1 || limit > 100) {
+      throw new BadRequestException('limit debe ser un entero entre 1 y 100.');
+    }
+
+    const offset = (page - 1) * limit;
+
+    if (!Number.isSafeInteger(offset)) {
+      throw new BadRequestException('La página solicitada es demasiado grande.');
+    }
+
+    const union = `
+      SELECT
+        id, source, entity, action, title, description, payload,
+        recorded_at AS event_date,
+        'create_events' AS _table
+      FROM create_events
+
+      UNION ALL
+
+      SELECT
+        id, source, entity, action, title, description, payload,
+        timestamp AS event_date,
+        'update_events' AS _table
+      FROM update_events
+
+      UNION ALL
+
+      SELECT
+        id, source, entity, action, title,
+        NULL AS description, payload,
+        createdAt AS event_date,
+        'delete_events' AS _table
+      FROM delete_events
+
+      UNION ALL
+
+      SELECT
+        id, source, entity, action, title, description, payload,
+        event_date,
+        'query_events' AS _table
+      FROM query_events
+    `;
+
+    const counts = await this.createRepo.query<{ total: number }[]>(`
+      SELECT
+        (SELECT COUNT(*) FROM create_events) +
+        (SELECT COUNT(*) FROM update_events) +
+        (SELECT COUNT(*) FROM delete_events) +
+        (SELECT COUNT(*) FROM query_events) AS total
+    `);
+
+    const data = await this.createRepo.query<Record<string, unknown>[]>(
+      `
+        SELECT *
+        FROM (${union}) AS events
+        ORDER BY _table ASC, id ASC
+        LIMIT ? OFFSET ?
+      `,
+      [limit, offset],
+    );
+
+    const total = Number(counts[0].total);
+
+    return {
+      data,
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
 
   async findAll(): Promise<object[]> {
     // Incidencia perfectiva: agrega 4 tablas en memoria sin orden garantizado
