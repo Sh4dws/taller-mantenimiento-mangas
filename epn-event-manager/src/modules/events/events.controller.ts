@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  DefaultValuePipe,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 
@@ -14,6 +23,14 @@ export class EventsController {
   @Get()
   findAll() {
     return this.eventsService.findAll();
+  }
+
+  @Get('paginated')
+  findPaginated(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ) {
+    return this.eventsService.findPaginated(page, limit);
   }
 
   @Get('source/:source')
